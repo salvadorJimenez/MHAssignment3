@@ -53,7 +53,7 @@ function showMap(position){
 
 	///Display the map
 	var map = new google.maps.Map(document.getElementById('map'), {
-    	zoom: 10,
+    	zoom: 15,
     	center: location
     });
 
@@ -61,6 +61,13 @@ function showMap(position){
     map.addListener('click', function(e) {
         placeMarkerAndPanTo(e.latLng, map);
     });
+
+    var currentLocationMarker = new google.maps.Marker({
+    	position:{lat:latitude, lng:longitude},
+    	map:map,
+    	title:"You"
+    });
+    setAnimation(currentLocationMarker);
 
 	//Iterare the object and display the markers//
 	for (var key in locations.locationsColima) {
