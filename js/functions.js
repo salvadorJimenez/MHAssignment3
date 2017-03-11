@@ -124,3 +124,10 @@ $(document).ready(function(){
 		$("#status").html("<p>Geolocation is not supported by your browser</p>");
 	}
 });
+
+//FIREBASE TEST FUNCTIONS
+$('#btSend').on('click', function (e) {
+
+     var btn = document.getElementById("outText");
+     btn.innerHTML = "Some text!";
+})
