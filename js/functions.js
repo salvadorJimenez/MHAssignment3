@@ -44,12 +44,18 @@ function error(error){
 	$("#status").html("<p>Error: "+error+"</p>");
 }
 
+var currentLocation;
+var totalLocationsByPinsDistance = 0;
+var totalLocationsDistance = 0;
+var counterLocations = 1;
+
 //Display the map and the markers//
 function showMap(position){
 	var location;
 	var latitude=position.coords.latitude;
 	var longitude=position.coords.longitude;
 	location= {lat:latitude,lng:longitude};
+	currentLocation = location;
 
 	///Display the map
 	var map = new google.maps.Map(document.getElementById('map'), {
@@ -60,6 +66,9 @@ function showMap(position){
 	//Addlistener to know when the user make click on the map
     map.addListener('click', function(e) {
         placeMarkerAndPanTo(e.latLng, map);
+        var loc = {lat:e.latLng.lat(), lng:e.latLng.lng()};
+        showDistance(loc);    
+        console.log(loc);
     });
 
     var currentLocationMarker = new google.maps.Marker({
@@ -68,7 +77,8 @@ function showMap(position){
     	title:"You"
     });
     setAnimation(currentLocationMarker);
-
+    var locationStart;
+	var locationDest;
 	//Iterare the object and display the markers//
 	for (var key in locations.locationsColima) {
 		if (locations.locationsColima.hasOwnProperty(key)) {
@@ -85,7 +95,14 @@ function showMap(position){
 		    	map:map,
 		    	title:name
 		    });
+		    
+		    if (locations.locationsColima[key+1] !== null) {
+		    	locationStart = {lat:locations.locationsColima[key].lat, lng:locations.locationsColima[key].lng};
+		    	locationDest = {lat:locations.locationsColima[key+1].lat, lng:locations.locationsColima[key+1].lng};
 
+		    	totalLocationsDistance += computeDistance(locationStart,locationDest);
+		    };
+		    console.log(totalLocationsDistance);
 		    attachDescription(marker,contentString);
 		    setAnimation(marker);
 		}
@@ -120,6 +137,31 @@ function setAnimation(marker){
 		else
 			marker.setAnimation(google.maps.Animation.BOUNCE);	
 	});
+}
+
+
+function showDistance(latLang){
+	var distance = computeDistance(latLang,currentLocation) + totalLocationsByPinsDistance;
+	totalLocationsByPinsDistance = distance;
+	counterLocations++;
+	$("#distanceDiv").html("<p>The distance between your " + counterLocations + " locations is " + distance + " km</p>");
+}
+
+function computeDistance(startCoords, destCoords) {
+    var startLatRads = degreesToRadians(startCoords.lat);
+    var startLongRads = degreesToRadians(startCoords.lng);
+    var destLatRads = degreesToRadians(destCoords.lat);
+    var destLongRads = degreesToRadians(destCoords.lng);
+    var Radius = 6371; // radius of the Earth in km
+    var distance = Math.acos(Math.sin(startLatRads) * Math.sin(destLatRads) +
+    Math.cos(startLatRads) * Math.cos(destLatRads) *
+    Math.cos(startLongRads - destLongRads)) * Radius;
+    return distance;
+}
+
+function degreesToRadians(degrees) {
+    var radians = (degrees * Math.PI)/180;
+    return radians;
 }
 
 $(document).ready(function(){
