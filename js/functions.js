@@ -131,6 +131,7 @@ $(document).ready(function(){
 	showMap();
 
 	$("#pingLocation").on("click",function(){
+		$("#pingLocation").hide();
 		pingMapListener();
 	});
 });
