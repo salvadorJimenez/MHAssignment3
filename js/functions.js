@@ -128,10 +128,52 @@ function setAnimation(marker){
 }
 
 $(document).ready(function(){
-	showMap();
+  	showMap();
 
 	$("#pingLocation").on("click",function(){
 		$("#pingLocation").hide();
 		pingMapListener();
 	});
 });
+
+	//Check if your browser has support to geolocation
+	if(navigator.geolocation){
+		navigator.geolocation.getCurrentPosition(showMap,error);
+	}
+	else{
+		$("#status").html("<p>Geolocation is not supported by your browser</p>");
+	}
+});
+
+//FIREBASE FUNCTIONS
+$('#btSend').on('click', function (e) {
+
+     var data = {
+     	description : "New Item",
+     	lat: 19.2432,
+     	lng: -103.7281,
+     	mediaURL: "",
+     	name: "New Item from JS"
+     }
+     console.log(data);
+     database = firebase.database();
+     var ref = database.ref('locations');
+     ref.push(data);
+});
+
+$('#btGet').on('click', function (e) {
+     database = firebase.database();
+
+     var ref = database.ref('locations');
+     ref.on('value', gotData, errorData);
+});
+
+//If we got the data correctly
+function gotData(data){
+	console.log(data.val());
+}
+//If something went wrong with the data
+function errorData(error){
+	console.log('Error');
+	console.log(error);
+}

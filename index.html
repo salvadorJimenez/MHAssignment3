@@ -3,6 +3,7 @@
 <head>
 	<meta charset="UTF-8">
 	<title>Geolocation</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 	<link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -21,6 +22,23 @@
 		</form>
 	</div>
 	<div id="status"></div>
+	<button type="button" class="btn btn-primary" id="btSend">Send</button>
+	<button type="button" class="btn btn-primary" id="btGet">Get</button>
+	<div id="outText"></div>
+	<script src="https://www.gstatic.com/firebasejs/3.7.1/firebase.js"></script>
+	<script>
+	  // Initialize Firebase
+	  var config = {
+	    apiKey: "AIzaSyCnPFDveSZGu43gMARaHjnkAhxZYLdOnbo",
+	    authDomain: "mhgeolocation.firebaseapp.com",
+	    databaseURL: "https://mhgeolocation.firebaseio.com",
+	    storageBucket: "mhgeolocation.appspot.com",
+	    messagingSenderId: "524777882949"
+	  };
+	  firebase.initializeApp(config);
+	</script>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 </body>
 <script src="js/jquery-3.1.1.min.js"></script>
 <script src="js/functions.js"></script>
