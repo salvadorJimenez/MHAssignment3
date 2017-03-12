@@ -7,11 +7,22 @@
 </head>
 <body>
 	<div id="map"></div>
+	<div id="description"></div>
+	<div id="controls">
+		<button id="pingLocation">Ping a new location</button>
+	</div>
+	<div>
+		<form hidden="true" id="pingDescription">
+			<input id="name" type="text">
+			<textarea id="text" cols="30" rows="2"></textarea>
+			<input id="saveLocation" type="button" value="Save location" >
+		</form>
+	</div>
 	<div id="status"></div>
 </body>
 <script src="js/jquery-3.1.1.min.js"></script>
 <script src="js/functions.js"></script>
-<script async defer
+<script defer
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCXKAq3o95BOgP3R9DekHnekX0l3nl5rj0">
 </script>
 </html>
