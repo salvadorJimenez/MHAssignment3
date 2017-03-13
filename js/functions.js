@@ -87,6 +87,7 @@ function placeMarkerAndPanTo(latLng){
     map.panTo(latLng);
     google.maps.event.clearListeners(map,'click');
     $("#newLocation").hide();
+    $("#description").html(selectedLocation);
     $("#pingDescription").show();
     $aMarkers.push($marker);
     $latLng=latLng;
