@@ -127,6 +127,7 @@ $(document).ready(function(){
 
 	$("#pingLocation").on("click",function(){
 		$("#pingLocation").hide();
+		$("#description").html("<h4>Click on Map to Create new Ping</h4>");
 		pingMapListener();
 	});
 
@@ -140,6 +141,12 @@ $(document).ready(function(){
 		setAnimation($aMarkers[last]);
 		$("#pingDescription").hide();
 		$("#pingLocation").show();
+	});
+	$("#btCancel").on("click",function(){
+		$("#pingLocation").show();
+		$("#description").html("<h4>Select a Pin to View More Info</h4>");
+		$("#pingDescription").hide();
+		//TO DO: *****CÓDIGO PARA ELIMINAR EL MARCADOR CREADO******
 	});
 });
 
