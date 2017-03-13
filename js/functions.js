@@ -80,7 +80,7 @@ function showMap(data){
 var newLocations=[];
 //Display a mark into the map when you make click in some place of the map
 function placeMarkerAndPanTo(latLng){
-	var marker = new google.maps.Marker({
+	 $marker = new google.maps.Marker({
         position: latLng,
         map: map
     });
@@ -88,7 +88,7 @@ function placeMarkerAndPanTo(latLng){
     google.maps.event.clearListeners(map,'click');
     $("#newLocation").hide();
     $("#pingDescription").show();
-    $aMarkers.push(marker);
+    $aMarkers.push($marker);
     $latLng=latLng;
 }
 
@@ -146,7 +146,8 @@ $(document).ready(function(){
 		$("#pingLocation").show();
 		$("#description").html("<h4>Select a Pin to View More Info</h4>");
 		$("#pingDescription").hide();
-		//TO DO: *****CÓDIGO PARA ELIMINAR EL MARCADOR CREADO******
+		$aMarkers.pop();
+		$marker.setMap(null);
 	});
 });
 
