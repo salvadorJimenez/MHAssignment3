@@ -44,18 +44,21 @@ function error(error){
 	$("#status").html("<p>Error: "+error+"</p>");
 }
 
+var userLocation;
 var currentLocation;
+var lastLocation;
 var totalLocationsByPinsDistance = 0;
-var totalLocationsDistance = 0;
+var totalDefaultLocationsDistance = 0;
 var counterLocations = 1;
 
 //Display the map and the markers//
 function showMap(position){
 	var location;
-	var latitude=position.coords.latitude;
-	var longitude=position.coords.longitude;
-	location= {lat:latitude,lng:longitude};
+	var latitude = position.coords.latitude;
+	var longitude = position.coords.longitude;
+	location = {lat:latitude,lng:longitude};
 	currentLocation = location;
+	userLocation = location;
 
 	///Display the map
 	var map = new google.maps.Map(document.getElementById('map'), {
@@ -66,9 +69,10 @@ function showMap(position){
 	//Addlistener to know when the user make click on the map
     map.addListener('click', function(e) {
         placeMarkerAndPanTo(e.latLng, map);
-        var loc = {lat:e.latLng.lat(), lng:e.latLng.lng()};
-        showDistance(loc);    
-        console.log(loc);
+        lastLocation = currentLocation;
+        currentLocation = {lat:e.latLng.lat(), lng:e.latLng.lng()};
+        showTotalSelectedDistance(currentLocation);  
+        showLastTwoLocationsDistance(currentLocation);  
     });
 
     var currentLocationMarker = new google.maps.Marker({
@@ -79,34 +83,41 @@ function showMap(position){
     setAnimation(currentLocationMarker);
     var locationStart;
 	var locationDest;
+	var latDest;
+	var lngDest;
+	var locationsCounter = 0;
 	//Iterare the object and display the markers//
 	for (var key in locations.locationsColima) {
 		if (locations.locationsColima.hasOwnProperty(key)) {
-		    var name=locations.locationsColima[key].name;
-		    var description=locations.locationsColima[key].description;
-		    var lati=locations.locationsColima[key].lat;
-		    var long=locations.locationsColima[key].lng;
+		    var name = locations.locationsColima[key].name;
+		    var description = locations.locationsColima[key].description;
+		    var lati = locations.locationsColima[key].lat;
+		    var long = locations.locationsColima[key].lng;
 
 		    var contentString="<h4> "+name+" <h4><p>"+description+"</p>";
 
 		    //create a marker on the map
-		    var marker= new google.maps.Marker({
+		    var marker = new google.maps.Marker({
 		    	position:{lat:lati,lng:long},
 		    	map:map,
 		    	title:name
 		    });
 		    
-		    if (locations.locationsColima[key+1] !== null) {
-		    	locationStart = {lat:locations.locationsColima[key].lat, lng:locations.locationsColima[key].lng};
-		    	locationDest = {lat:locations.locationsColima[key+1].lat, lng:locations.locationsColima[key+1].lng};
-
-		    	totalLocationsDistance += computeDistance(locationStart,locationDest);
-		    };
-		    console.log(totalLocationsDistance);
+		    if (locations.locationsColima[locationsCounter+1] != null) {
+		    	lngDest = locations.locationsColima[locationsCounter+1].lng;
+		    	latDest = locations.locationsColima[locationsCounter+1].lat;
+		    	locationStart = {lat:lati, lng:long};
+		    	locationDest = {lat:latDest, lng:lngDest};
+		    	locationsCounter++;
+		    	totalDefaultLocationsDistance += computeDistance(locationStart,locationDest);
+		    }
 		    attachDescription(marker,contentString);
 		    setAnimation(marker);
 		}
 	}
+
+	showDefaultLocationsDistance();
+	showTwoPointsDefaultDistance();
 }
 
 //Display a mark into the map when you make click in some place of the map
@@ -139,12 +150,31 @@ function setAnimation(marker){
 	});
 }
 
+function showTwoPointsDefaultDistance() {
+	var locationsMeasuredString = "Your distance to: <br>";
+	var newLocation;
+	for(var key in locations.locationsColima){
+		newLocation = {lat:locations.locationsColima[key].lat,lng:locations.locationsColima[key].lng};
+		locationsMeasuredString +=  locations.locationsColima[key].name + " is " + 
+		computeDistance(currentLocation,newLocation) + " km.<br>";
+	}
 
-function showDistance(latLang){
-	var distance = computeDistance(latLang,currentLocation) + totalLocationsByPinsDistance;
+	$("#defaultTwoPointsDistance").html("<p>" + locationsMeasuredString + "</p>");
+}
+
+function showDefaultLocationsDistance() {
+	$("#defaultLocationsDistance").html("<p>The distance between default locations is " + totalDefaultLocationsDistance + " km");
+}
+
+function showLastTwoLocationsDistance(currentLocation){
+	$("#distanceTwoPoints").html("<p>The distance between last 2 locations is " + computeDistance(lastLocation,currentLocation) + " km</p>")
+}
+
+function showTotalSelectedDistance(currentLocation){
+	var distance = computeDistance(lastLocation,currentLocation) + totalLocationsByPinsDistance;
 	totalLocationsByPinsDistance = distance;
 	counterLocations++;
-	$("#distanceDiv").html("<p>The distance between your " + counterLocations + " locations is " + distance + " km</p>");
+	$("#distancePinsDiv").html("<p>The distance between your " + counterLocations + " locations is " + distance + " km</p>");
 }
 
 function computeDistance(startCoords, destCoords) {
