@@ -23,6 +23,19 @@
 			<input id="saveLocation" type="button" value="Save location" >
 		</form>
 	</div>
+	<div id="viewGetDistance" hidden="true">
+		<h3>Get Distance of the selected markers from</h3>
+		<div id="controlsDistance" hidden="true">
+			<button id="myLocation">My location</button>
+			<button id="location">Specific location</button>
+			<button id="all">All Locations</button>
+		</div>
+		<div id="distanceLocations">
+			<ul>
+				<div id="alertDistance" class='alert alert-info'><strong>Atention</strong> To obtanin the distance have to choose at least 3 locations.</div>
+			</ul>
+		</div>
+	</div>
 	<div id="status"></div>
 	<button type="button" class="btn btn-primary" id="btSend">Send</button>
 	<div id="outText"></div>

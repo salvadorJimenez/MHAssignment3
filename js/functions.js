@@ -143,17 +143,33 @@ function degreesToRadians(degrees) {
 
 function setNewListener(marker){
 	marker.addListener("click",function(){
+		var long;
 		if(marker.getAnimation()==null){
 			marker.setAnimation(google.maps.Animation.BOUNCE);
 			locationSelected.push(marker);
+			long=locationSelected.length;
+			if(long>2){
+				$("#alertDistance").hide();
+				$("#controlsDistance").show();
+			}else{
+				$("#alertDistance").show();
+				$("#controlsDistance").hide();
+			}
 		}
 		else{
 			marker.setAnimation(null);
 
 			for(var key in locationSelected){
 				if(locationSelected[key]==marker){
-					console.log(locationSelected[key]);
-					locationSelected.splice(key,1);					
+					locationSelected.splice(key,1);
+					long=locationSelected.length;
+					if(long>2){
+						$("#alertDistance").hide();
+						$("#controlsDistance").show();
+					}else{
+						$("#alertDistance").show();
+						$("#controlsDistance").hide();
+					}			
 				}
 			}
 		}
@@ -167,6 +183,7 @@ $(document).ready(function(){
 
 	$("#pingLocation").on("click",function(){
 		$("#pingLocation").hide();
+		$("#getDistanceLocations").hide();
 		pingMapListener();
 	});
 
@@ -180,13 +197,15 @@ $(document).ready(function(){
 		setAnimation($aMarkers[last]);
 		$("#pingDescription").hide();
 		$("#pingLocation").show();
+		$("#getDistanceLocations").show();
 	});
 
 	$("#getDistanceLocations").on("click",function(){
+		$("#pingLocation").hide();
 		$("#getDistanceLocations").hide();
+		$("#saveLocation").hide();
 		$("#backStandard").show();
-
-		locationSelected=[];
+		$("#viewGetDistance").show();
 		for(var key in $aMarkers){
 			$aMarkers[key].setAnimation(null);
 			google.maps.event.clearListeners($aMarkers[key], 'click');
@@ -195,13 +214,18 @@ $(document).ready(function(){
 	});
 
 	$("#backStandard").on("click",function(){
+		locationSelected=[];
 		for(var key in $aMarkers){
 			google.maps.event.clearListeners($aMarkers[key], 'click');
 			$aMarkers[key].setAnimation(null);
 			setAnimation($aMarkers[key]);
 			attachDescription($aMarkers[key],$contentString[key]);
 			$("#getDistanceLocations").show();
+			$("#saveLocation").show();
 			$("#backStandard").hide();
+			$("#controlsDistance").hide();
+			$("#viewGetDistance").hide();
+			$("#pingLocation").show();
 		}
 	});
 });
