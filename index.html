@@ -3,19 +3,50 @@
 <head>
 	<meta charset="UTF-8">
 	<title>Geolocation</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 	<link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-	<div id="map" class="horizontal-align"></div>
+	<div id="map"></div>
+	<div id="description"></div>
+	<div id="controls">
+		<button id="pingLocation">Ping a new location</button>
+	</div>
+	<div>
+		<form hidden="true" id="pingDescription">
+			<label for="name">Name</label>
+			<input id="name" name="name" type="text" placeholder="Put the name of your marker">
+			<label for="text">Description</label>
+			<textarea id="text" name="text" placeholder="Put here the description of your marker" cols="30" rows="2"></textarea>
+			<input id="saveLocation" type="button" value="Save location" >
+		</form>
+	</div>
 	<div id="status"></div>
 	<div id="defaultTwoPointsDistance"></div>
 	<div id="defaultLocationsDistance"></div>
 	<div id="distanceTwoPoints"></div>
 	<div id="distancePinsDiv"></div>
+	<div id="status"></div>
+	<button type="button" class="btn btn-primary" id="btSend">Send</button>
+	<div id="outText"></div>
+	<script src="https://www.gstatic.com/firebasejs/3.7.1/firebase.js"></script>
+	<script>
+	  // Initialize Firebase
+	  var config = {
+	    apiKey: "AIzaSyCnPFDveSZGu43gMARaHjnkAhxZYLdOnbo",
+	    authDomain: "mhgeolocation.firebaseapp.com",
+	    databaseURL: "https://mhgeolocation.firebaseio.com",
+	    storageBucket: "mhgeolocation.appspot.com",
+	    messagingSenderId: "524777882949"
+	  };
+	  firebase.initializeApp(config);
+	</script>
+
 </body>
 <script src="js/jquery-3.1.1.min.js"></script>
-<script src="js/functions.js?v=1"></script>
-<script async defer
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script src="js/functions.js"></script>
+<script defer
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCXKAq3o95BOgP3R9DekHnekX0l3nl5rj0">
 </script>
 </html>

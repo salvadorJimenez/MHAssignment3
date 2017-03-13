@@ -38,9 +38,11 @@ var locations={"locationsColima":[{
 };
 //////////////////////END OF JSON FOR TESTS/////////
 
+
+var defaultCoordsColima={lat:19.363624,lng:-103.686562};
+
 //Show an error if geolocation doesn't work//
 function error(error){
-	console.log(error);
 	$("#status").html("<p>Error: "+error+"</p>");
 }
 
@@ -52,49 +54,22 @@ var totalDefaultLocationsDistance = 0;
 var counterLocations = 1;
 
 //Display the map and the markers//
-function showMap(position){
-	var location;
-	var latitude = position.coords.latitude;
-	var longitude = position.coords.longitude;
-	location = {lat:latitude,lng:longitude};
-	currentLocation = location;
-	userLocation = location;
-
+function showMap(data){
 	///Display the map
-	var map = new google.maps.Map(document.getElementById('map'), {
-    	zoom: 15,
-    	center: location
+	map = new google.maps.Map(document.getElementById('map'), {
+    	zoom: 11,
+    	center: defaultCoordsColima
     });
 
-	//Addlistener to know when the user make click on the map
-    map.addListener('click', function(e) {
-        placeMarkerAndPanTo(e.latLng, map);
-        lastLocation = currentLocation;
-        currentLocation = {lat:e.latLng.lat(), lng:e.latLng.lng()};
-        showTotalSelectedDistance(currentLocation);  
-        showLastTwoLocationsDistance(currentLocation);  
-    });
-
-    var currentLocationMarker = new google.maps.Marker({
-    	position:{lat:latitude, lng:longitude},
-    	map:map,
-    	title:"You"
-    });
-    setAnimation(currentLocationMarker);
-    var locationStart;
-	var locationDest;
-	var latDest;
-	var lngDest;
-	var locationsCounter = 0;
+    $aMarkers=[];
 	//Iterare the object and display the markers//
-	for (var key in locations.locationsColima) {
-		if (locations.locationsColima.hasOwnProperty(key)) {
-		    var name = locations.locationsColima[key].name;
-		    var description = locations.locationsColima[key].description;
-		    var lati = locations.locationsColima[key].lat;
-		    var long = locations.locationsColima[key].lng;
+	for (var key in data) {
+		    var name=data[key].name;
+		    var description=data[key].description;
+		    var lati=data[key].lat;
+		    var long=data[key].lng;
 
-		    var contentString="<h4> "+name+" <h4><p>"+description+"</p>";
+		    var contentString="<h4> "+name+"</h4><p>"+description+"</p>";
 
 		    //create a marker on the map
 		    var marker = new google.maps.Marker({
@@ -102,51 +77,55 @@ function showMap(position){
 		    	map:map,
 		    	title:name
 		    });
-		    
-		    if (locations.locationsColima[locationsCounter+1] != null) {
-		    	lngDest = locations.locationsColima[locationsCounter+1].lng;
-		    	latDest = locations.locationsColima[locationsCounter+1].lat;
-		    	locationStart = {lat:lati, lng:long};
-		    	locationDest = {lat:latDest, lng:lngDest};
-		    	locationsCounter++;
-		    	totalDefaultLocationsDistance += computeDistance(locationStart,locationDest);
-		    }
+
+		    $aMarkers.push(marker);
+
 		    attachDescription(marker,contentString);
 		    setAnimation(marker);
 		}
-	}
-
-	showDefaultLocationsDistance();
-	showTwoPointsDefaultDistance();
 }
 
+
+var newLocations=[];
 //Display a mark into the map when you make click in some place of the map
-function placeMarkerAndPanTo(latLng, map){
+function placeMarkerAndPanTo(latLng){
 	var marker = new google.maps.Marker({
         position: latLng,
         map: map
     });
     map.panTo(latLng);
+    google.maps.event.clearListeners(map,'click');
+    $("#newLocation").hide();
+    $("#pingDescription").show();
+    $aMarkers.push(marker);
+    $latLng=latLng;
+}
+
+function pingMapListener(){
+	map.addListener('click', function(e) {
+	    placeMarkerAndPanTo(e.latLng);
+	});
 }
 
 //add a description to the marker
 function attachDescription(marker,contentString){
-	var infowindow = new google.maps.InfoWindow({
-        content: contentString
-    });
-
 	marker.addListener('click', function() {
-        infowindow.open(marker.get('map'), marker);
+        $("#description").html(contentString);
     });
 }
 
 //Set a animation to the marker
 function setAnimation(marker){
 	marker.addListener("click",function(){
-		if(marker.getAnimation() !== null)
+		if(marker.getAnimation() != null)
 			marker.setAnimation(null);
-		else
-			marker.setAnimation(google.maps.Animation.BOUNCE);	
+		else{
+			marker.setAnimation(google.maps.Animation.BOUNCE);
+			for(var a=0;a<$aMarkers.length;a++){
+				if(marker!==$aMarkers[a])
+					$aMarkers[a].setAnimation(null);
+			}
+		}
 	});
 }
 
@@ -195,11 +174,53 @@ function degreesToRadians(degrees) {
 }
 
 $(document).ready(function(){
-	//Check if your browser has support to geolocation
-	if(navigator.geolocation){
-		navigator.geolocation.getCurrentPosition(showMap,error);
-	}
-	else{
-		$("#status").html("<p>Geolocation is not supported by your browser</p>");
+	database = firebase.database();
+    var ref = database.ref('locations');
+    ref.on('value', gotData, errorData);
+
+	$("#pingLocation").on("click",function(){
+		$("#pingLocation").hide();
+		pingMapListener();
+	});
+
+	$("#saveLocation").on("click",function(){
+    	var name=$("#name").val();
+    	var description=$("#text").val();
+		newLocations.push({"latitude":$latLng.lat(),"longitude":$latLng.lng(),"name":name,"description":description,"mediaURL":""});
+		var last=($aMarkers.length)-1;
+		var contentString="<h4> "+name+"</h4><p>"+description+"</p>";
+		attachDescription($aMarkers[last],contentString);
+		setAnimation($aMarkers[last]);
+		$("#pingDescription").hide();
+		$("#pingLocation").show();
+	});
+});
+
+//FIREBASE FUNCTIONS
+$('#btSend').on('click', function (e) {
+
+	for(var key in newLocations){
+		if(newLocations.hasOwnProperty(key)){
+			var data={
+				description : newLocations[key].description,
+				lat: newLocations[key].latitude, 
+				lng: newLocations[key].longitude,
+				mediaURL: newLocations[key].mediaURL,
+				name: newLocations[key].name
+			};
+    		database = firebase.database();
+    		var ref = database.ref('locations');
+    		ref.push(data);
+		}
 	}
 });
+
+//If we got the data correctly
+function gotData(data){
+	showMap(data.val());
+}
+//If something went wrong with the data
+function errorData(error){
+	console.log('Error');
+	console.log(error);
+}
