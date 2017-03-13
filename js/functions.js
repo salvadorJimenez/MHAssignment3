@@ -1,45 +1,7 @@
-//JSON FOR TESTS//
-var locations={"locationsColima":[{
-		"lat":19.24331,
-		"lng":-103.72802,
-		"name":"Historical Center",
-		"description": "In the Historical Center of Colima Capital we can see, among many others, the Government Palace, the portals, the Cathedral, the Theater Hidalgo, the Municipal Presidency, Hotel Ceballos, the kiosk , The Liberty Garden, the Portal of Medellin, etc."
-	},
-	{
-		"lat":19.51267,
-		"lng":-103.61734,
-		"name":"Volcano of Colima",
-		"description": "Yeah we have a Volcano"
-	},
-	{
-		"lat":19.32306,
-		"lng":-103.75845,
-		"name":"Comala",
-		"description": "A magic town of Colima"
-	},
-	{
-		"lat":19.36172,
-		"lng":-103.72387,
-		"name":"Magical Zone",
-		"description": "Where's everithing can happen"
-	},
-	{
-		"lat":19.26561,
-		"lng":-103.73598,
-		"name":"Jardín de la Villa",
-		"description": "You have to go there for some popsicles"
-	},
-	{
-		"lat":19.26782,
-		"lng":-103.72565,
-		"name":"La Campana",
-		"description": "Arqueoligical zone"
-	}]
-};
-//////////////////////END OF JSON FOR TESTS/////////
-
-
 var defaultCoordsColima={lat:19.363624,lng:-103.686562};
+
+var labels = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+var labelIndex = 0;
 
 //Show an error if geolocation doesn't work//
 function error(error){
@@ -61,12 +23,16 @@ function showMap(data){
 		    var description=data[key].description;
 		    var lati=data[key].lat;
 		    var long=data[key].lng;
-
-		    var contentString="<h4> "+name+"</h4><p>"+description+"</p>";
-
+		    var media=data[key].mediaURL;
+		    var contentString;
+		    if (media!=="")
+		    	contentString="<h4> "+name+"</h4><video width='320' height='240' autoplay><source src='"+media+"' type='video/mp4'>Your browser does not support the video tag.</video> <p>"+description+"</p>";
+		    else
+		    	contentString="<h4> "+name+"</h4><p>"+description+"</p>";
 		    //create a marker on the map
 		    var marker= new google.maps.Marker({
 		    	position:{lat:lati,lng:long},
+		    	label: labels[labelIndex++ % labels.length],
 		    	map:map,
 		    	title:name
 		    });
