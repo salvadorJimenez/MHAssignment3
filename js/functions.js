@@ -1,44 +1,3 @@
-//JSON FOR TESTS//
-var locations={"locationsColima":[{
-		"lat":19.24331,
-		"lng":-103.72802,
-		"name":"Historical Center",
-		"description": "In the Historical Center of Colima Capital we can see, among many others, the Government Palace, the portals, the Cathedral, the Theater Hidalgo, the Municipal Presidency, Hotel Ceballos, the kiosk , The Liberty Garden, the Portal of Medellin, etc."
-	},
-	{
-		"lat":19.51267,
-		"lng":-103.61734,
-		"name":"Volcano of Colima",
-		"description": "Yeah we have a Volcano"
-	},
-	{
-		"lat":19.32306,
-		"lng":-103.75845,
-		"name":"Comala",
-		"description": "A magic town of Colima"
-	},
-	{
-		"lat":19.36172,
-		"lng":-103.72387,
-		"name":"Magical Zone",
-		"description": "Where's everithing can happen"
-	},
-	{
-		"lat":19.26561,
-		"lng":-103.73598,
-		"name":"Jardín de la Villa",
-		"description": "You have to go there for some popsicles"
-	},
-	{
-		"lat":19.26782,
-		"lng":-103.72565,
-		"name":"La Campana",
-		"description": "Arqueoligical zone"
-	}]
-};
-//////////////////////END OF JSON FOR TESTS/////////
-
-
 var defaultCoordsColima={lat:19.363624,lng:-103.686562};
 
 //Show an error if geolocation doesn't work//
@@ -46,11 +5,12 @@ function error(error){
 	$("#status").html("<p>Error: "+error+"</p>");
 }
 
-var userLocation;
 var currentLocation;
+var storedLocations;
 var lastLocation;
+var staticLocation;
 var totalLocationsByPinsDistance = 0;
-var totalDefaultLocationsDistance = 0;
+var totalDefaultLocationsDistance;
 var counterLocations = 1;
 
 //Display the map and the markers//
@@ -61,6 +21,8 @@ function showMap(data){
     	center: defaultCoordsColima
     });
 
+
+	currentLocation = defaultCoordsColima;
     $aMarkers=[];
 	//Iterare the object and display the markers//
 	for (var key in data) {
@@ -79,7 +41,6 @@ function showMap(data){
 		    });
 
 		    $aMarkers.push(marker);
-
 		    attachDescription(marker,contentString);
 		    setAnimation(marker);
 		}
@@ -130,18 +91,26 @@ function setAnimation(marker){
 }
 
 function showTwoPointsDefaultDistance() {
-	var locationsMeasuredString = "Your distance to: <br>";
+	var locationsMeasuredString = "Your distance (Your location = " + defaultCoordsColima.lat + "," + defaultCoordsColima.lng + ") from: <br>";
 	var newLocation;
-	for(var key in locations.locationsColima){
-		newLocation = {lat:locations.locationsColima[key].lat,lng:locations.locationsColima[key].lng};
-		locationsMeasuredString +=  locations.locationsColima[key].name + " is " + 
-		computeDistance(currentLocation,newLocation) + " km.<br>";
+	for(var key in storedLocations){
+		newLocation = {lat:storedLocations[key].lat,lng:storedLocations[key].lng};
+		locationsMeasuredString +=  "-" + storedLocations[key].name + " is " + 
+		computeDistance(defaultCoordsColima,newLocation) + " km.<br>";
 	}
 
 	$("#defaultTwoPointsDistance").html("<p>" + locationsMeasuredString + "</p>");
 }
 
 function showDefaultLocationsDistance() {
+	var lastLocation = currentLocation;
+	totalDefaultLocationsDistance = 0;
+	for(var key in storedLocations){
+		currentLocation = {lat:storedLocations[key].lat, lng:storedLocations[key].lng};
+		totalDefaultLocationsDistance += computeDistance(lastLocation,currentLocation);
+		lastLocation = currentLocation;
+		console.log(totalDefaultLocationsDistance);
+	}
 	$("#defaultLocationsDistance").html("<p>The distance between default locations is " + totalDefaultLocationsDistance + " km");
 }
 
@@ -217,6 +186,7 @@ $('#btSend').on('click', function (e) {
 
 //If we got the data correctly
 function gotData(data){
+	storedLocations = data.val();
 	showMap(data.val());
 }
 //If something went wrong with the data
