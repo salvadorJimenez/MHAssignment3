@@ -47,7 +47,7 @@ function error(error){
 }
 
 //Display the map and the markers//
-function showMap(){
+function showMap(data){
 	///Display the map
 	map = new google.maps.Map(document.getElementById('map'), {
     	zoom: 11,
@@ -56,12 +56,11 @@ function showMap(){
 
     $aMarkers=[];
 	//Iterare the object and display the markers//
-	for (var key in locations.locationsColima) {
-		if (locations.locationsColima.hasOwnProperty(key)) {
-		    var name=locations.locationsColima[key].name;
-		    var description=locations.locationsColima[key].description;
-		    var lati=locations.locationsColima[key].lat;
-		    var long=locations.locationsColima[key].lng;
+	for (var key in data) {
+		    var name=data[key].name;
+		    var description=data[key].description;
+		    var lati=data[key].lat;
+		    var long=data[key].lng;
 
 		    var contentString="<h4> "+name+"</h4><p>"+description+"</p>";
 
@@ -77,7 +76,6 @@ function showMap(){
 		    attachDescription(marker,contentString);
 		    setAnimation(marker);
 		}
-	}
 }
 var newLocations=[];
 //Display a mark into the map when you make click in some place of the map
@@ -90,13 +88,8 @@ function placeMarkerAndPanTo(latLng){
     google.maps.event.clearListeners(map,'click');
     $("#newLocation").hide();
     $("#pingDescription").show();
-    $("#saveLocation").on("click",function(){
-    	var name=$("#name").val();
-    	var description=$("#text").val();
-		newLocations.push({"latitude":latLng.lat(),"longitude":latLng.lng(),"name":name,"description":description});
-		$("#pingDescription").hide();
-		$("#pingLocation").show();
-	});
+    $aMarkers.push(marker);
+    $latLng=latLng;
 }
 
 function pingMapListener(){
@@ -128,49 +121,50 @@ function setAnimation(marker){
 }
 
 $(document).ready(function(){
-  	showMap();
+	database = firebase.database();
+    var ref = database.ref('locations');
+    ref.on('value', gotData, errorData);
 
 	$("#pingLocation").on("click",function(){
 		$("#pingLocation").hide();
 		pingMapListener();
 	});
-});
 
-	//Check if your browser has support to geolocation
-	if(navigator.geolocation){
-		navigator.geolocation.getCurrentPosition(showMap,error);
-	}
-	else{
-		$("#status").html("<p>Geolocation is not supported by your browser</p>");
-	}
+	$("#saveLocation").on("click",function(){
+    	var name=$("#name").val();
+    	var description=$("#text").val();
+		newLocations.push({"latitude":$latLng.lat(),"longitude":$latLng.lng(),"name":name,"description":description,"mediaURL":""});
+		var last=($aMarkers.length)-1;
+		var contentString="<h4> "+name+"</h4><p>"+description+"</p>";
+		attachDescription($aMarkers[last],contentString);
+		setAnimation($aMarkers[last]);
+		$("#pingDescription").hide();
+		$("#pingLocation").show();
+	});
 });
 
 //FIREBASE FUNCTIONS
 $('#btSend').on('click', function (e) {
 
-     var data = {
-     	description : "New Item",
-     	lat: 19.2432,
-     	lng: -103.7281,
-     	mediaURL: "",
-     	name: "New Item from JS"
-     }
-     console.log(data);
-     database = firebase.database();
-     var ref = database.ref('locations');
-     ref.push(data);
-});
-
-$('#btGet').on('click', function (e) {
-     database = firebase.database();
-
-     var ref = database.ref('locations');
-     ref.on('value', gotData, errorData);
+	for(var key in newLocations){
+		if(newLocations.hasOwnProperty(key)){
+			var data={
+				description : newLocations[key].description,
+				lat: newLocations[key].latitude, 
+				lng: newLocations[key].longitude,
+				mediaURL: newLocations[key].mediaURL,
+				name: newLocations[key].name
+			};
+    		database = firebase.database();
+    		var ref = database.ref('locations');
+    		ref.push(data);
+		}
+	}
 });
 
 //If we got the data correctly
 function gotData(data){
-	console.log(data.val());
+	showMap(data.val());
 }
 //If something went wrong with the data
 function errorData(error){
