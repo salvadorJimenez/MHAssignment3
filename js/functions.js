@@ -1,5 +1,14 @@
 var defaultCoordsColima={lat:19.363624,lng:-103.686562};
 
+var userLocation;
+var currentLocation;
+var lastLocation;
+var totalLocationsByPinsDistance = 0;
+var totalDefaultLocationsDistance = 0;
+var counterLocations = 1;
+
+var newLocations=[];
+var locationSelected=[];
 //Show an error if geolocation doesn't work//
 function error(error){
 	$("#status").html("<p>Error: "+error+"</p>");
@@ -24,15 +33,21 @@ function showMap(data){
 
 	currentLocation = defaultCoordsColima;
     $aMarkers=[];
+    $contentString=[];
 	//Iterare the object and display the markers//
 	for (var key in data) {
 		    var name=data[key].name;
 		    var description=data[key].description;
 		    var lati=data[key].lat;
 		    var long=data[key].lng;
+		    var media=data[key].mediaURL;
 
-		    var contentString="<h4> "+name+"</h4><p>"+description+"</p>";
-
+		    var contentString;
+		    if (media!=="")
+		    	contentString="<h4> "+name+"</h4><video width='320' height='240' autoplay><source src='"+media+"' type='video/mp4'>Your browser does not support the video tag.</video> <p>"+description+"</p>";
+		    else
+		    	contentString="<h4> "+name+"</h4><p>"+description+"</p>";
+		    $contentString.push(contentString);
 		    //create a marker on the map
 		    var marker = new google.maps.Marker({
 		    	position:{lat:lati,lng:long},
@@ -46,12 +61,11 @@ function showMap(data){
 		}
 }
 
-
-var newLocations=[];
 //Display a mark into the map when you make click in some place of the map
 function placeMarkerAndPanTo(latLng){
 	var marker = new google.maps.Marker({
         position: latLng,
+        icon: 'http://maps.google.com/mapfiles/ms/icons/green-dot.png',
         map: map
     });
     map.panTo(latLng);
@@ -67,6 +81,7 @@ function pingMapListener(){
 	    placeMarkerAndPanTo(e.latLng);
 	});
 }
+
 
 //add a description to the marker
 function attachDescription(marker,contentString){
@@ -98,7 +113,6 @@ function showTwoPointsDefaultDistance() {
 		locationsMeasuredString +=  "-" + storedLocations[key].name + " is " + 
 		computeDistance(defaultCoordsColima,newLocation) + " km.<br>";
 	}
-
 	$("#defaultTwoPointsDistance").html("<p>" + locationsMeasuredString + "</p>");
 }
 
@@ -115,7 +129,7 @@ function showDefaultLocationsDistance() {
 }
 
 function showLastTwoLocationsDistance(currentLocation){
-	$("#distanceTwoPoints").html("<p>The distance between last 2 locations is " + computeDistance(lastLocation,currentLocation) + " km</p>")
+	$("#distanceTwoPoints").html("<p>The distance between last 2 locations is " + computeDistance(lastLocation,currentLocation) + " km</p>");
 }
 
 function showTotalSelectedDistance(currentLocation){
@@ -142,6 +156,42 @@ function degreesToRadians(degrees) {
     return radians;
 }
 
+
+function setNewListener(marker){
+	marker.addListener("click",function(){
+		var long;
+		if(marker.getAnimation()==null){
+			marker.setAnimation(google.maps.Animation.BOUNCE);
+			locationSelected.push(marker);
+			long=locationSelected.length;
+			if(long>2){
+				$("#alertDistance").hide();
+				$("#controlsDistance").show();
+			}else{
+				$("#alertDistance").show();
+				$("#controlsDistance").hide();
+			}
+		}
+		else{
+			marker.setAnimation(null);
+
+			for(var key in locationSelected){
+				if(locationSelected[key]==marker){
+					locationSelected.splice(key,1);
+					long=locationSelected.length;
+					if(long>2){
+						$("#alertDistance").hide();
+						$("#controlsDistance").show();
+					}else{
+						$("#alertDistance").show();
+						$("#controlsDistance").hide();
+					}			
+				}
+			}
+		}
+	});
+}
+
 $(document).ready(function(){
 	database = firebase.database();
     var ref = database.ref('locations');
@@ -149,6 +199,7 @@ $(document).ready(function(){
 
 	$("#pingLocation").on("click",function(){
 		$("#pingLocation").hide();
+		$("#getDistanceLocations").hide();
 		pingMapListener();
 	});
 
@@ -158,10 +209,41 @@ $(document).ready(function(){
 		newLocations.push({"latitude":$latLng.lat(),"longitude":$latLng.lng(),"name":name,"description":description,"mediaURL":""});
 		var last=($aMarkers.length)-1;
 		var contentString="<h4> "+name+"</h4><p>"+description+"</p>";
+		$contentString.push(contentString);
 		attachDescription($aMarkers[last],contentString);
 		setAnimation($aMarkers[last]);
 		$("#pingDescription").hide();
 		$("#pingLocation").show();
+		$("#getDistanceLocations").show();
+	});
+
+	$("#getDistanceLocations").on("click",function(){
+		$("#pingLocation").hide();
+		$("#getDistanceLocations").hide();
+		$("#saveLocation").hide();
+		$("#backStandard").show();
+		$("#viewGetDistance").show();
+		for(var key in $aMarkers){
+			$aMarkers[key].setAnimation(null);
+			google.maps.event.clearListeners($aMarkers[key], 'click');
+			setNewListener($aMarkers[key]);
+		}
+	});
+
+	$("#backStandard").on("click",function(){
+		locationSelected=[];
+		for(var key in $aMarkers){
+			google.maps.event.clearListeners($aMarkers[key], 'click');
+			$aMarkers[key].setAnimation(null);
+			setAnimation($aMarkers[key]);
+			attachDescription($aMarkers[key],$contentString[key]);
+			$("#getDistanceLocations").show();
+			$("#saveLocation").show();
+			$("#backStandard").hide();
+			$("#controlsDistance").hide();
+			$("#viewGetDistance").hide();
+			$("#pingLocation").show();
+		}
 	});
 });
 
@@ -180,6 +262,7 @@ $('#btSend').on('click', function (e) {
     		database = firebase.database();
     		var ref = database.ref('locations');
     		ref.push(data);
+    		location.reload();
 		}
 	}
 });
