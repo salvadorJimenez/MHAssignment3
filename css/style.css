@@ -1,4 +1,9 @@
 #map{
-	width: 100%;
-	height: 500px;
+	width: 80rem;
+	height: 40rem;
 }
+
+.horizontal-align {
+	margin-top: 0 auto;
+}
+

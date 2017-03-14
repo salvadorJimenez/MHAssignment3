@@ -14,6 +14,13 @@ function error(error){
 	$("#status").html("<p>Error: "+error+"</p>");
 }
 
+var currentLocation;
+var storedLocations;
+var lastLocation;
+var totalLocationsByPinsDistance = 0;
+var totalDefaultLocationsDistance;
+var counterLocations = 0;
+
 //Display the map and the markers//
 function showMap(data){
 	///Display the map
@@ -22,6 +29,8 @@ function showMap(data){
     	center: defaultCoordsColima
     });
 
+
+	currentLocation = defaultCoordsColima;
     $aMarkers=[];
     $contentString=[];
 	//Iterare the object and display the markers//
@@ -39,14 +48,13 @@ function showMap(data){
 		    	contentString="<h4> "+name+"</h4><p>"+description+"</p>";
 		    $contentString.push(contentString);
 		    //create a marker on the map
-		    var marker= new google.maps.Marker({
+		    var marker = new google.maps.Marker({
 		    	position:{lat:lati,lng:long},
 		    	map:map,
 		    	title:name
 		    });
 
 		    $aMarkers.push(marker);
-
 		    attachDescription(marker,contentString);
 		    setAnimation(marker);
 		}
@@ -54,7 +62,7 @@ function showMap(data){
 
 //Display a mark into the map when you make click in some place of the map
 function placeMarkerAndPanTo(latLng){
-	var marker = new google.maps.Marker({
+	 $marker = new google.maps.Marker({
         position: latLng,
         icon: 'http://maps.google.com/mapfiles/ms/icons/green-dot.png',
         map: map
@@ -62,8 +70,10 @@ function placeMarkerAndPanTo(latLng){
     map.panTo(latLng);
     google.maps.event.clearListeners(map,'click');
     $("#newLocation").hide();
+    var selectedLocation = "<h4>Selected <br>lat:"+latLng.lat() +", long:" +latLng.lng()+"</h4>";
+    $("#description").html(selectedLocation);
     $("#pingDescription").show();
-    $aMarkers.push(marker);
+    $aMarkers.push($marker);
     $latLng=latLng;
 }
 
@@ -97,30 +107,42 @@ function setAnimation(marker){
 }
 
 function showTwoPointsDefaultDistance() {
-	var locationsMeasuredString = "Your distance to: <br>";
+	var locationsMeasuredString = "Your distance (Your location = " + defaultCoordsColima.lat + "," + defaultCoordsColima.lng + ") from: <br>";
 	var newLocation;
-	for(var key in locations.locationsColima){
-		newLocation = {lat:locations.locationsColima[key].lat,lng:locations.locationsColima[key].lng};
-		locationsMeasuredString +=  locations.locationsColima[key].name + " is " + 
-		computeDistance(currentLocation,newLocation) + " km.<br>";
+	for(var key in storedLocations){
+		newLocation = {lat:storedLocations[key].lat,lng:storedLocations[key].lng};
+		locationsMeasuredString +=  "-" + storedLocations[key].name + " is " + 
+		computeDistance(defaultCoordsColima,newLocation) + " km.<br>";
 	}
-
-	$("#defaultTwoPointsDistance").html("<p>" + locationsMeasuredString + "</p>");
+	$("#distances").html("<p>" + locationsMeasuredString + "</p>");
 }
 
 function showDefaultLocationsDistance() {
-	$("#defaultLocationsDistance").html("<p>The distance between default locations is " + totalDefaultLocationsDistance + " km");
+	lastLocation = currentLocation;
+	totalDefaultLocationsDistance = 0;
+	for(var key in storedLocations){
+		currentLocation = {lat:storedLocations[key].lat, lng:storedLocations[key].lng};
+		totalDefaultLocationsDistance += computeDistance(lastLocation,currentLocation);
+		lastLocation = currentLocation;
+	}
+	$("#distances").html("<p>The distance between default locations is " + totalDefaultLocationsDistance + " km");
 }
 
-function showLastTwoLocationsDistance(currentLocation){
-	$("#distanceTwoPoints").html("<p>The distance between last 2 locations is " + computeDistance(lastLocation,currentLocation) + " km</p>");
-}
 
-function showTotalSelectedDistance(currentLocation){
-	var distance = computeDistance(lastLocation,currentLocation) + totalLocationsByPinsDistance;
-	totalLocationsByPinsDistance = distance;
-	counterLocations++;
-	$("#distancePinsDiv").html("<p>The distance between your " + counterLocations + " locations is " + distance + " km</p>");
+function showTotalSelectedDistance(){
+
+	var distance = 0;
+	counterLocations = 0;
+	lastLocation = locationSelected[0];
+	for(var key in locationSelected){
+		currentLocation = locationSelected[key];
+		distance += computeDistance(lastLocation,currentLocation);
+		lastLocation = currentLocation;
+		counterLocations++;
+		console.log(distance);
+	}
+	
+	$("#distances").html("<p>The distance between your " + counterLocations + " locations is " + distance + " km</p>");
 }
 
 function computeDistance(startCoords, destCoords) {
@@ -146,7 +168,9 @@ function setNewListener(marker){
 		var long;
 		if(marker.getAnimation()==null){
 			marker.setAnimation(google.maps.Animation.BOUNCE);
-			locationSelected.push(marker);
+			var latMarker = marker.getPosition().lat();
+			var lngMarker = marker.getPosition().lng();
+			locationSelected.push({lat:latMarker,lng:lngMarker});
 			long=locationSelected.length;
 			if(long>2){
 				$("#alertDistance").hide();
@@ -180,9 +204,11 @@ $(document).ready(function(){
 	database = firebase.database();
     var ref = database.ref('locations');
     ref.on('value', gotData, errorData);
+    $("#backStandard").hide();
 
 	$("#pingLocation").on("click",function(){
 		$("#pingLocation").hide();
+		$("#description").html("<h4>Click on Map to Create new Ping</h4>");
 		$("#getDistanceLocations").hide();
 		pingMapListener();
 	});
@@ -214,6 +240,21 @@ $(document).ready(function(){
 		}
 	});
 
+
+	$("#myLocation").on("click", function(){
+		showTwoPointsDefaultDistance();
+	});
+
+	$("#location").on("click", function(){
+		showTotalSelectedDistance(locationSelected);
+	});
+
+	$("#all").on("click", function(){
+		showDefaultLocationsDistance();
+	});
+
+
+
 	$("#backStandard").on("click",function(){
 		locationSelected=[];
 		for(var key in $aMarkers){
@@ -228,6 +269,14 @@ $(document).ready(function(){
 			$("#viewGetDistance").hide();
 			$("#pingLocation").show();
 		}
+	});
+	$("#btCancel").on("click",function(){
+		$("#pingLocation").show();
+		$("#getDistanceLocations").show();
+		$("#description").html("<h4>Select a Pin to View More Info</h4>");
+		$("#pingDescription").hide();
+		$aMarkers.pop();
+		$marker.setMap(null);
 	});
 });
 
@@ -253,6 +302,7 @@ $('#btSend').on('click', function (e) {
 
 //If we got the data correctly
 function gotData(data){
+	storedLocations = data.val();
 	showMap(data.val());
 }
 //If something went wrong with the data
