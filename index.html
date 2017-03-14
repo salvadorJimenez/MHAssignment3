@@ -39,12 +39,12 @@
 						    <option value="https://dl.dropboxusercontent.com/u/109942726/jardin_de_la_villa.mp4">Jardín</option>
 						    <option value="https://dl.dropboxusercontent.com/u/109942726/la_campana.mp4">La Campana</option>
 						    <option value="https://dl.dropboxusercontent.com/u/45436742/reportera_hormigas.mp4">JuanGa</option>
-						    <option value="https://dl.dropboxusercontent.com/u/109942726/juan_gabriel.mp4">Dont Choose Me</option>
+						    <option value="https://dl.dropboxusercontent.com/u/109942726/juan_gabriel.mp4">Don't Choose Me</option>
 						</select>
 					</div>
-						<button type="button" class="btn btn-success" id="saveLocation">Save Location</button>
-						<button type="button" class="btn btn-primary" id="btSend">Send</button>
-						<button type="button" class="btn btn-danger" id="btCancel">Cancel</button>
+					<button type="button" class="btn btn-success" id="saveLocation">Save Location</button>
+					<button type="button" class="btn btn-primary" id="btSend">Send</button>
+					<button type="button" class="btn btn-danger" id="btCancel">Cancel</button>
 				</form>
 				<!--<div id="status"></div>	-->
 				<div id="viewGetDistance" hidden="true">
@@ -53,16 +53,19 @@
 							<button id="myLocation" class="btn btn-success">My location</button>
 							<button id="location" class="btn btn-success">Specific location</button>
 							<button id="all" class="btn btn-success">All Locations</button>
+							<div class="form-group" id="appendSelect" hidden="true">
+								<label for="select">List Of Selected Locations: </label>
+								<select class="form-control" name="select"></select>
+							</div>
 						</div>
 					</div>
 				</div>
-					<div id="distanceLocations" hidden="true">
-						<ul>
-							<div id="alertDistance" class='alert alert-info'><strong>Atention</strong> To obtanin the distance have to choose at least 3 locations.</div>
-						</ul>
-					</div>
+				<div id="distanceLocations">
+					<ul></ul>
 				</div>
 			</div>
+		</div>
+	</div>
 	<div id="status"></div>
 	<div id="distances"></div>
 	<div id="status"></div>
