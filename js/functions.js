@@ -62,7 +62,7 @@ function placeMarkerAndPanTo(latLng){
     map.panTo(latLng);
     google.maps.event.clearListeners(map,'click');
     $("#newLocation").hide();
-    var selectedLocation = "Selected lat:"+latLng.lat() +", long:" +latLng.lng();
+    var selectedLocation = "<h4>Selected <br>lat:"+latLng.lat() +", long:" +latLng.lng()+"</h4>";
     $("#description").html(selectedLocation);
     $("#pingDescription").show();
     $aMarkers.push($marker);
@@ -182,6 +182,7 @@ $(document).ready(function(){
 	database = firebase.database();
     var ref = database.ref('locations');
     ref.on('value', gotData, errorData);
+    $("#backStandard").hide();
 
 	$("#pingLocation").on("click",function(){
 		$("#pingLocation").hide();
@@ -234,6 +235,7 @@ $(document).ready(function(){
 	});
 	$("#btCancel").on("click",function(){
 		$("#pingLocation").show();
+		$("#getDistanceLocations").show();
 		$("#description").html("<h4>Select a Pin to View More Info</h4>");
 		$("#pingDescription").hide();
 		$aMarkers.pop();
