@@ -10,6 +10,7 @@
 	<div class="container">
 		<div class="row">
 			<div class="col-md-8">
+			<div id="status" hidden="true" class="well"></div>
 				<div id="map"></div>
 			</div>
 		
@@ -46,7 +47,6 @@
 						<button type="button" class="btn btn-primary" id="btSend">Send</button>
 						<button type="button" class="btn btn-danger" id="btCancel">Cancel</button>
 				</form>
-				<!--<div id="status"></div>	-->
 				<div id="viewGetDistance" hidden="true">
 					<div id="controlsDistance" hidden="true">
 						<div class="btn-group">
@@ -61,12 +61,10 @@
 							<div id="alertDistance" class='alert alert-info'><strong>Atention</strong> To obtanin the distance have to choose at least 3 locations.</div>
 						</ul>
 					</div>
+					<div id="distances" class="well"></div>
 				</div>
 			</div>
-	<div id="status"></div>
-	<div id="distances"></div>
-	<div id="status"></div>
-
+	
 	<script src="https://www.gstatic.com/firebasejs/3.7.1/firebase.js"></script>
 	<script>
 	  // Initialize Firebase

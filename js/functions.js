@@ -11,8 +11,12 @@ var newLocations=[];
 var locationSelected=[];
 //Show an error if geolocation doesn't work//
 function error(error){
+	$("#status").show();
 	$("#status").html("<p>Error: "+error+"</p>");
 }
+
+$("#backStandard").hide();
+$("#distances").hide();
 
 var currentLocation;
 var storedLocations;
@@ -115,6 +119,7 @@ function showTwoPointsDefaultDistance() {
 		computeDistance(defaultCoordsColima,newLocation) + " km.<br>";
 	}
 	$("#distances").html("<p>" + locationsMeasuredString + "</p>");
+	$("#distances").show();
 }
 
 function showDefaultLocationsDistance() {
@@ -126,6 +131,7 @@ function showDefaultLocationsDistance() {
 		lastLocation = currentLocation;
 	}
 	$("#distances").html("<p>The distance between default locations is " + totalDefaultLocationsDistance + " km");
+	$("#distances").show();
 }
 
 
@@ -143,6 +149,7 @@ function showTotalSelectedDistance(){
 	}
 	
 	$("#distances").html("<p>The distance between your " + counterLocations + " locations is " + distance + " km</p>");
+	$("#distances").show();
 }
 
 function computeDistance(startCoords, destCoords) {
@@ -204,7 +211,6 @@ $(document).ready(function(){
 	database = firebase.database();
     var ref = database.ref('locations');
     ref.on('value', gotData, errorData);
-    $("#backStandard").hide();
 
 	$("#pingLocation").on("click",function(){
 		$("#pingLocation").hide();
@@ -233,6 +239,7 @@ $(document).ready(function(){
 		$("#saveLocation").hide();
 		$("#backStandard").show();
 		$("#viewGetDistance").show();
+		$("#description").html("<h4>Select 3 locations to continue</h4>");
 		for(var key in $aMarkers){
 			$aMarkers[key].setAnimation(null);
 			google.maps.event.clearListeners($aMarkers[key], 'click');
@@ -268,6 +275,8 @@ $(document).ready(function(){
 			$("#controlsDistance").hide();
 			$("#viewGetDistance").hide();
 			$("#pingLocation").show();
+			$("#distances").hide();
+			$("#description").html("<h4>Select a Pin to View More Info</h4>");
 		}
 	});
 	$("#btCancel").on("click",function(){
