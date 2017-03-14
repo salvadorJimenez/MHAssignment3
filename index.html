@@ -11,6 +11,8 @@
 	<div id="description"></div>
 	<div id="controls">
 		<button id="pingLocation">Ping a new location</button>
+		<button id="getDistanceLocations">Get Distance of some locations</button>
+		<button id="backStandard" hidden="true">Back Standard View</button>
 	</div>
 	<div>
 		<form hidden="true" id="pingDescription">
@@ -20,6 +22,19 @@
 			<textarea id="text" name="text" placeholder="Put here the description of your marker" cols="30" rows="2"></textarea>
 			<input id="saveLocation" type="button" value="Save location" >
 		</form>
+	</div>
+	<div id="viewGetDistance" hidden="true">
+		<h3>Get Distance of the selected markers from</h3>
+		<div id="controlsDistance" hidden="true">
+			<button id="myLocation">My location</button>
+			<button id="location">Specific location</button>
+			<button id="all">All Locations</button>
+		</div>
+		<div id="distanceLocations">
+			<ul>
+				<div id="alertDistance" class='alert alert-info'><strong>Atention</strong> To obtanin the distance have to choose at least 3 locations.</div>
+			</ul>
+		</div>
 	</div>
 	<div id="status"></div>
 	<button type="button" class="btn btn-primary" id="btSend">Send</button>
