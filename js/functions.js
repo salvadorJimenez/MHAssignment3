@@ -1,8 +1,3 @@
-//JSON FOR TESTS//
-var locations={};
-//////////////////////END OF JSON FOR TESTS/////////
-
-
 var defaultCoordsColima={lat:19.363624,lng:-103.686562};
 
 var userLocation;
@@ -12,6 +7,8 @@ var totalLocationsByPinsDistance = 0;
 var totalDefaultLocationsDistance = 0;
 var counterLocations = 1;
 
+var newLocations=[];
+var locationSelected=[];
 //Show an error if geolocation doesn't work//
 function error(error){
 	$("#status").html("<p>Error: "+error+"</p>");
@@ -26,17 +23,19 @@ function showMap(data){
     });
 
     $aMarkers=[];
-    $contentString=[];
 	//Iterare the object and display the markers//
 	for (var key in data) {
 		    var name=data[key].name;
 		    var description=data[key].description;
 		    var lati=data[key].lat;
 		    var long=data[key].lng;
+		    var media=data[key].mediaURL;
 
-		    var contentString="<h4> "+name+"</h4><p>"+description+"</p>";
-		    $contentString.push(contentString);
-
+		    var contentString;
+		    if (media!=="")
+		    	contentString="<h4> "+name+"</h4><video width='320' height='240' autoplay><source src='"+media+"' type='video/mp4'>Your browser does not support the video tag.</video> <p>"+description+"</p>";
+		    else
+		    	contentString="<h4> "+name+"</h4><p>"+description+"</p>";
 		    //create a marker on the map
 		    var marker= new google.maps.Marker({
 		    	position:{lat:lati,lng:long},
@@ -50,13 +49,12 @@ function showMap(data){
 		    setAnimation(marker);
 		}
 }
-var newLocations=[];
-var locationSelected=[];
 
 //Display a mark into the map when you make click in some place of the map
 function placeMarkerAndPanTo(latLng){
 	var marker = new google.maps.Marker({
         position: latLng,
+        icon: 'http://maps.google.com/mapfiles/ms/icons/green-dot.png',
         map: map
     });
     map.panTo(latLng);
@@ -245,6 +243,7 @@ $('#btSend').on('click', function (e) {
     		database = firebase.database();
     		var ref = database.ref('locations');
     		ref.push(data);
+    		location.reload();
 		}
 	}
 });
