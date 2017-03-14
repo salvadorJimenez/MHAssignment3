@@ -23,6 +23,7 @@ function showMap(data){
     });
 
     $aMarkers=[];
+    $contentString=[];
 	//Iterare the object and display the markers//
 	for (var key in data) {
 		    var name=data[key].name;
@@ -36,6 +37,7 @@ function showMap(data){
 		    	contentString="<h4> "+name+"</h4><video width='320' height='240' autoplay><source src='"+media+"' type='video/mp4'>Your browser does not support the video tag.</video> <p>"+description+"</p>";
 		    else
 		    	contentString="<h4> "+name+"</h4><p>"+description+"</p>";
+		    $contentString.push(contentString);
 		    //create a marker on the map
 		    var marker= new google.maps.Marker({
 		    	position:{lat:lati,lng:long},
@@ -191,6 +193,7 @@ $(document).ready(function(){
 		newLocations.push({"latitude":$latLng.lat(),"longitude":$latLng.lng(),"name":name,"description":description,"mediaURL":""});
 		var last=($aMarkers.length)-1;
 		var contentString="<h4> "+name+"</h4><p>"+description+"</p>";
+		$contentString.push(contentString);
 		attachDescription($aMarkers[last],contentString);
 		setAnimation($aMarkers[last]);
 		$("#pingDescription").hide();
