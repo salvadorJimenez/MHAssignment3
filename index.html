@@ -10,6 +10,7 @@
 	<div class="container">
 		<div class="row">
 			<div class="col-md-8">
+				<div id="status" hidden="true" class="well"></div>
 				<div id="map"></div>
 			</div>
 		
@@ -17,8 +18,8 @@
 				<div id="description" class="well"><h4>Select a Pin to View More Info</h4></div>
 				<div id="controls">
 					<button id="pingLocation" class="btn btn-success">Ping a new location</button>
-					<button id="getDistanceLocations" class="btn btn-success">Get Distance of some locations</button>
-					<button id="backStandard" hidden="true">Back Standard View</button>
+					<button id="getDistanceLocations" class="btn btn-success">Get locations Distance</button>
+					<button id="backStandard" hidden="true" class="btn btn-danger">Back Standard View</button>
 				</div>
 				<form hidden="true" id="pingDescription">
 					<div class="form-group">
@@ -29,26 +30,44 @@
 						<label for="text">Description</label>
 						<textarea id="text" name="text" placeholder="Put here the description of your marker" cols="30" rows="2" class="form-control"></textarea>
 					</div>
-					<input id="saveLocation" type="button" value="Save location" class="btn btn-success">
-					<button type="button" class="btn btn-primary" id="btSend">Send</button>
+					<div class="form-group">
+						<label for="name">Select Media</label>
+						<select class="form-control" id="mediaSelector">
+						    <option value="https://dl.dropboxusercontent.com/u/109942726/colima_centro.mp4">Colima Centro</option>
+						    <option value="https://dl.dropboxusercontent.com/u/109942726/volcan_colima.mp4">Volcan Colima</option>
+						    <option value="https://dl.dropboxusercontent.com/u/109942726/comala.mp4">Comala</option>
+						    <option value="https://dl.dropboxusercontent.com/u/109942726/zona_magica.mp4">Zona Magica</option>
+						    <option value="https://dl.dropboxusercontent.com/u/109942726/jardin_de_la_villa.mp4">Jardín</option>
+						    <option value="https://dl.dropboxusercontent.com/u/109942726/la_campana.mp4">La Campana</option>
+						    <option value="https://dl.dropboxusercontent.com/u/45436742/reportera_hormigas.mp4">JuanGa</option>
+						    <option value="https://dl.dropboxusercontent.com/u/109942726/juan_gabriel.mp4">Don't Choose Me</option>
+						</select>
+					</div>
+					<button type="button" class="btn btn-success" id="saveLocation">Save Location</button>
+					<button hidden="true" type="button" class="btn btn-primary" id="btSend"></button>
 					<button type="button" class="btn btn-danger" id="btCancel">Cancel</button>
 				</form>
-				<div id="status"></div>	
+				<!--<div id="status"></div>	-->
 				<div id="viewGetDistance" hidden="true">
-					<h3>Get Distance of the selected markers from</h3>
 					<div id="controlsDistance" hidden="true">
-						<button id="myLocation">My location</button>
-						<button id="location">Specific location</button>
-						<button id="all">All Locations</button>
-					</div>
-					<div id="distanceLocations">
-						<ul>
-							<div id="alertDistance" class='alert alert-info'><strong>Atention</strong> To obtanin the distance have to choose at least 3 locations.</div>
-						</ul>
+						<div class="btn-group">
+							<button id="myLocation" class="btn btn-success">My location</button>
+							<button id="location" class="btn btn-success">Specific location</button>
+							<button id="all" class="btn btn-success">All Locations</button>
+							<div class="form-group" id="appendSelect" hidden="true">
+								<label for="select">List Of Selected Locations: </label>
+								<select class="form-control" name="select"></select>
+							</div>
+						</div>
 					</div>
 				</div>
+				<div id="distanceLocations">
+					<ul></ul>
+				</div>
 			</div>
-	<div id="status"></div>
+		</div>
+	</div>
+
 	<script src="https://www.gstatic.com/firebasejs/3.7.1/firebase.js"></script>
 	<script>
 	  // Initialize Firebase

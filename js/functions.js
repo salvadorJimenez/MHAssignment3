@@ -11,8 +11,17 @@ var newLocations=[];
 var locationSelected=[];
 //Show an error if geolocation doesn't work//
 function error(error){
+	$("#status").show();
 	$("#status").html("<p>Error: "+error+"</p>");
 }
+$("#backStandard").hide();
+
+var currentLocation;
+var storedLocations;
+var lastLocation;
+var totalLocationsByPinsDistance = 0;
+var totalDefaultLocationsDistance;
+var counterLocations = 0;
 
 //Display the map and the markers//
 function showMap(data){
@@ -22,6 +31,8 @@ function showMap(data){
     	center: defaultCoordsColima
     });
 
+
+	currentLocation = defaultCoordsColima;
     $aMarkers=[];
     $contentString=[];
 	//Iterare the object and display the markers//
@@ -32,21 +43,16 @@ function showMap(data){
 		    var long=data[key].lng;
 		    var media=data[key].mediaURL;
 
-		    var contentString;
-		    if (media!=="")
-		    	contentString="<h4> "+name+"</h4><video width='320' height='240' autoplay><source src='"+media+"' type='video/mp4'>Your browser does not support the video tag.</video> <p>"+description+"</p>";
-		    else
-		    	contentString="<h4> "+name+"</h4><p>"+description+"</p>";
+		   	var contentString="<h4> "+name+"</h4><video width='320' height='240' autoplay><source src='"+media+"' type='video/mp4'>Your browser does not support the video tag.</video> <p>"+description+"</p>";
 		    $contentString.push(contentString);
 		    //create a marker on the map
-		    var marker= new google.maps.Marker({
+		    var marker = new google.maps.Marker({
 		    	position:{lat:lati,lng:long},
 		    	map:map,
 		    	title:name
 		    });
 
 		    $aMarkers.push(marker);
-
 		    attachDescription(marker,contentString);
 		    setAnimation(marker);
 		}
@@ -62,9 +68,10 @@ function placeMarkerAndPanTo(latLng){
     map.panTo(latLng);
     google.maps.event.clearListeners(map,'click');
     $("#newLocation").hide();
-    var selectedLocation = "Selected lat:"+latLng.lat() +", long:" +latLng.lng();
+    var selectedLocation = "<h4>Selected <br>lat:"+latLng.lat() +", long:" +latLng.lng()+"</h4>";
     $("#description").html(selectedLocation);
     $("#pingDescription").show();
+    $("#btSend").hide();
     $aMarkers.push($marker);
     $latLng=latLng;
 }
@@ -99,30 +106,80 @@ function setAnimation(marker){
 }
 
 function showTwoPointsDefaultDistance() {
-	var locationsMeasuredString = "Your distance to: <br>";
+	var locationsMeasuredString = "Your distance (Your location = " + defaultCoordsColima.lat + "," + defaultCoordsColima.lng + ") from: <br>";
 	var newLocation;
-	for(var key in locations.locationsColima){
-		newLocation = {lat:locations.locationsColima[key].lat,lng:locations.locationsColima[key].lng};
-		locationsMeasuredString +=  locations.locationsColima[key].name + " is " + 
-		computeDistance(currentLocation,newLocation) + " km.<br>";
+	for(var key in storedLocations){
+		newLocation = {lat:storedLocations[key].lat,lng:storedLocations[key].lng};
+		locationsMeasuredString +=  "-" + storedLocations[key].name + " is " + 
+		computeDistance(defaultCoordsColima,newLocation) + " km.<br>";
 	}
-
-	$("#defaultTwoPointsDistance").html("<p>" + locationsMeasuredString + "</p>");
+	$("#distances").html("<p>" + locationsMeasuredString + "</p>");
 }
 
 function showDefaultLocationsDistance() {
-	$("#defaultLocationsDistance").html("<p>The distance between default locations is " + totalDefaultLocationsDistance + " km");
+	lastLocation = currentLocation;
+	totalDefaultLocationsDistance = 0;
+	for(var key in storedLocations){
+		currentLocation = {lat:storedLocations[key].lat, lng:storedLocations[key].lng};
+		totalDefaultLocationsDistance += computeDistance(lastLocation,currentLocation);
+		lastLocation = currentLocation;
+	}
+	$("#distances").html("<p>The distance between default locations is " + totalDefaultLocationsDistance + " km");
 }
 
-function showLastTwoLocationsDistance(currentLocation){
-	$("#distanceTwoPoints").html("<p>The distance between last 2 locations is " + computeDistance(lastLocation,currentLocation) + " km</p>");
+function showTotalSelectedDistance(){
+
+	var distance = 0;
+	counterLocations = 0;
+	lastLocation = locationSelected[0];
+	for(var key in locationSelected){
+		currentLocation = locationSelected[key];
+		distance += computeDistance(lastLocation,currentLocation);
+		lastLocation = currentLocation;
+		counterLocations++;
+		console.log(distance);
+	}
+	
+	$("#distances").html("<p>The distance between your " + counterLocations + " locations is " + distance + " km</p>");
 }
 
-function showTotalSelectedDistance(currentLocation){
-	var distance = computeDistance(lastLocation,currentLocation) + totalLocationsByPinsDistance;
-	totalLocationsByPinsDistance = distance;
-	counterLocations++;
-	$("#distancePinsDiv").html("<p>The distance between your " + counterLocations + " locations is " + distance + " km</p>");
+function showDistancesFrom(startCoords,destCoords){
+	for(var key in $polylines){
+		$polylines[key].setMap(null);
+	}
+
+	$polylines=[];
+	$("#distanceLocations ul li").remove();
+	var arrDistances=[];
+	var names=[];
+	for(var key in destCoords){
+		if(startCoords!==destCoords[key]){
+			arrDistances[key]=computeDistance(startCoords,destCoords[key]);
+			names[key]=destCoords[key].name;
+			setPolyline([{lat: startCoords.lat,lng:startCoords.lng},{lat:destCoords[key].lat,lng:destCoords[key].lng}]);
+		}
+	}
+	var li="";
+	var arrPolygons=[];
+	for(var key in arrDistances){
+		li+="<li>The distance between "+startCoords.name+" and "+names[key]+" is : "+arrDistances[key]+"km</li>";
+	}
+
+	$("#distanceLocations ul").append(li);
+}
+
+$polylines=[];
+function setPolyline(coords){
+	var line = new google.maps.Polyline({
+	    path: coords,
+	    geodesic: true,
+	    strokeColor: '#FF0000',
+	    strokeOpacity: 1.0,
+	    strokeWeight: 2
+	});
+
+	line.setMap(map);
+	$polylines.push(line);
 }
 
 function computeDistance(startCoords, destCoords) {
@@ -142,15 +199,18 @@ function degreesToRadians(degrees) {
     return radians;
 }
 
-
+$markersSelected=[];
 function setNewListener(marker){
 	marker.addListener("click",function(){
 		var long;
 		if(marker.getAnimation()==null){
 			marker.setAnimation(google.maps.Animation.BOUNCE);
-			locationSelected.push(marker);
+			var latMarker = marker.getPosition().lat();
+			var lngMarker = marker.getPosition().lng();
+			locationSelected.push({lat:latMarker,lng:lngMarker, name: (marker.getTitle())});
+			$markersSelected.push(marker);
 			long=locationSelected.length;
-			if(long>2){
+			if(long>1){
 				$("#alertDistance").hide();
 				$("#controlsDistance").show();
 			}else{
@@ -161,11 +221,12 @@ function setNewListener(marker){
 		else{
 			marker.setAnimation(null);
 
-			for(var key in locationSelected){
-				if(locationSelected[key]==marker){
+			for(var key in $markersSelected){
+				if($markersSelected[key]==marker){
+					$markersSelected.splice(key,1);
 					locationSelected.splice(key,1);
 					long=locationSelected.length;
-					if(long>2){
+					if(long>1){
 						$("#alertDistance").hide();
 						$("#controlsDistance").show();
 					}else{
@@ -182,6 +243,7 @@ $(document).ready(function(){
 	database = firebase.database();
     var ref = database.ref('locations');
     ref.on('value', gotData, errorData);
+    $("#backStandard").hide();
 
 	$("#pingLocation").on("click",function(){
 		$("#pingLocation").hide();
@@ -193,18 +255,21 @@ $(document).ready(function(){
 	$("#saveLocation").on("click",function(){
     	var name=$("#name").val();
     	var description=$("#text").val();
-		newLocations.push({"latitude":$latLng.lat(),"longitude":$latLng.lng(),"name":name,"description":description,"mediaURL":""});
-		var last=($aMarkers.length)-1;
-		var contentString="<h4> "+name+"</h4><p>"+description+"</p>";
+    	var media=$("#mediaSelector").val();
+		newLocations.push({"latitude":$latLng.lat(),"longitude":$latLng.lng(),"name":name,"description":description,"mediaURL":media});
+		$("#btSend").click();
+		/*var last=($aMarkers.length)-1;
+		var contentString="<h4> "+name+"</h4><video width='320' height='240' autoplay><source src='"+media+"' type='video/mp4'>Your browser does not support the video tag.</video> <p>"+description+"</p>";
 		$contentString.push(contentString);
 		attachDescription($aMarkers[last],contentString);
 		setAnimation($aMarkers[last]);
 		$("#pingDescription").hide();
 		$("#pingLocation").show();
-		$("#getDistanceLocations").show();
+		$("#getDistanceLocations").show();*/
 	});
 
 	$("#getDistanceLocations").on("click",function(){
+		$("#description").html("<h4>Select at least 2 Locations</h4>");
 		$("#pingLocation").hide();
 		$("#getDistanceLocations").hide();
 		$("#saveLocation").hide();
@@ -217,8 +282,69 @@ $(document).ready(function(){
 		}
 	});
 
+	$myLocation=null;
+	$("#myLocation").on("click", function(){
+		if(navigator.geolocation)
+			navigator.geolocation.getCurrentPosition(function(position){
+				var latitude=position.coords.latitude;
+				var longitude=position.coords.longitude;
+				var startCoords={lat:latitude,lng:longitude,name:"My Location"};
+				if($myLocation===null){
+					$myLocation = new google.maps.Marker({
+	        			position: {lat: latitude,lng: longitude},
+	        			icon: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png',
+	        			title:"My Location",
+	        			map: map
+	    			});
+				}
+				else
+					$myLocation.setMap(map);
+
+				showDistancesFrom(startCoords,locationSelected);
+			}, error);	
+		$("#appendSelect").hide();
+	});
+
+	$("#location").on("click", function(){
+		$("#distanceLocations ul li").remove();
+		$("#appendSelect select option").remove();
+		var optionsSelect="<option value='null'>Select One</option>";
+		for(var key in locationSelected){
+			optionsSelect+="<option value="+key+">"+locationSelected[key].name+"</option>";
+		}
+		$("#appendSelect select").append(optionsSelect);
+		$("#appendSelect").show();
+	});
+
+	$("#all").on("click", function(){
+		showDefaultLocationsDistance();
+		$("#appendSelect").hide();
+	});
+
+	$("#appendSelect select").on("change",function(){
+		var valueOption=$("#appendSelect select").val();
+		var startCoords;
+		if(valueOption!='null'){
+			for(var key in locationSelected){
+				if (valueOption==key){
+					startCoords=locationSelected[key];
+				}
+			}
+			showDistancesFrom(startCoords,locationSelected);
+		}
+	});
+
 	$("#backStandard").on("click",function(){
 		locationSelected=[];
+		for(var key in $polylines){
+			$polylines[key].setMap(null);
+		}
+
+		$polylines=[];
+		if($myLocation!=null){
+			$myLocation.setMap(null);
+		}
+		$("#distanceLocations ul li").remove();
 		for(var key in $aMarkers){
 			google.maps.event.clearListeners($aMarkers[key], 'click');
 			$aMarkers[key].setAnimation(null);
@@ -230,20 +356,24 @@ $(document).ready(function(){
 			$("#controlsDistance").hide();
 			$("#viewGetDistance").hide();
 			$("#pingLocation").show();
+			$("#appendSelect").hide();
+			$("#description").html("<h4>Select a Pin to View More Info</h4>");
 		}
 	});
+
 	$("#btCancel").on("click",function(){
 		$("#pingLocation").show();
+		$("#getDistanceLocations").show();
 		$("#description").html("<h4>Select a Pin to View More Info</h4>");
 		$("#pingDescription").hide();
 		$aMarkers.pop();
 		$marker.setMap(null);
 	});
+
 });
 
 //FIREBASE FUNCTIONS
 $('#btSend').on('click', function (e) {
-
 	for(var key in newLocations){
 		if(newLocations.hasOwnProperty(key)){
 			var data={
@@ -263,6 +393,7 @@ $('#btSend').on('click', function (e) {
 
 //If we got the data correctly
 function gotData(data){
+	storedLocations = data.val();
 	showMap(data.val());
 }
 //If something went wrong with the data
