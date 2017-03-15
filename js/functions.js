@@ -11,8 +11,10 @@ var newLocations=[];
 var locationSelected=[];
 //Show an error if geolocation doesn't work//
 function error(error){
+	$("#status").show();
 	$("#status").html("<p>Error: "+error+"</p>");
 }
+$("#backStandard").hide();
 
 var currentLocation;
 var storedLocations;
@@ -69,6 +71,7 @@ function placeMarkerAndPanTo(latLng){
     var selectedLocation = "<h4>Selected <br>lat:"+latLng.lat() +", long:" +latLng.lng()+"</h4>";
     $("#description").html(selectedLocation);
     $("#pingDescription").show();
+    $("#btSend").hide();
     $aMarkers.push($marker);
     $latLng=latLng;
 }
@@ -266,6 +269,7 @@ $(document).ready(function(){
 	});
 
 	$("#getDistanceLocations").on("click",function(){
+		$("#description").html("<h4>Select at least 2 Locations</h4>");
 		$("#pingLocation").hide();
 		$("#getDistanceLocations").hide();
 		$("#saveLocation").hide();
@@ -353,6 +357,7 @@ $(document).ready(function(){
 			$("#viewGetDistance").hide();
 			$("#pingLocation").show();
 			$("#appendSelect").hide();
+			$("#description").html("<h4>Select a Pin to View More Info</h4>");
 		}
 	});
 
