@@ -143,6 +143,46 @@ function showTotalSelectedDistance(){
 	$("#distances").html("<p>The distance between your " + counterLocations + " locations is " + distance + " km</p>");
 }
 
+function showAllDistances(){
+	for(var key in $polylines){
+		$polylines[key].setMap(null);
+	}
+	$polylines=[];
+	$("#distanceLocations ul li").remove();
+	var arrDistances=[];
+	var allStartCoords=[];
+
+	var startCoords;
+	var destCoords;
+	for(var key in $aMarkers){
+		if($aMarkers.hasOwnProperty(key)){
+			arrDistances[key]=[];
+			startCoords={lat: $aMarkers[key].getPosition().lat(),lng:$aMarkers[key].getPosition().lat(), name:$aMarkers[key].getTitle()};
+			allStartCoords.push(startCoords);
+			for(var dest in $aMarkers){
+				if($aMarkers.hasOwnProperty(dest)){
+					if($aMarkers[key]!==$aMarkers[dest]){
+						destCoords={lat: $aMarkers[dest].getPosition().lat(),lng:$aMarkers[dest].getPosition().lat(), name:$aMarkers[dest].getTitle()};
+						arrDistances[key][dest]=computeDistance(startCoords,destCoords);
+						setPolyline([{lat:startCoords.lat,lng:startCoords.lng},{lat:destCoords.lat,lng:destCoords.lng}]);
+					}
+				}
+			}
+		}
+	}
+
+	var li="";
+	for(var key in allStartCoords){
+		for (var a in allStartCoords){
+			if(allStartCoords[key]!==allStartCoords[a]){
+				li+="<li>The distance between "+allStartCoords[key].name+" and "+allStartCoords[a].name+" is : "+arrDistances[key][a]+"km</li>";
+			}
+		}
+	}
+
+	$("#distanceLocations ul").append(li);
+}
+
 function showDistancesFrom(startCoords,destCoords){
 	for(var key in $polylines){
 		$polylines[key].setMap(null);
@@ -160,7 +200,6 @@ function showDistancesFrom(startCoords,destCoords){
 		}
 	}
 	var li="";
-	var arrPolygons=[];
 	for(var key in arrDistances){
 		li+="<li>The distance between "+startCoords.name+" and "+names[key]+" is : "+arrDistances[key]+"km</li>";
 	}
@@ -211,11 +250,13 @@ function setNewListener(marker){
 			$markersSelected.push(marker);
 			long=locationSelected.length;
 			if(long>1){
-				$("#alertDistance").hide();
-				$("#controlsDistance").show();
+				$("#location").show();
+			}else if(long>0){
+				$("#myLocation").show();
+				$("#location").hide();
 			}else{
-				$("#alertDistance").show();
-				$("#controlsDistance").hide();
+				$("#myLocation").hide();
+				$("#location").hide();
 			}
 		}
 		else{
@@ -227,12 +268,14 @@ function setNewListener(marker){
 					locationSelected.splice(key,1);
 					long=locationSelected.length;
 					if(long>1){
-						$("#alertDistance").hide();
-						$("#controlsDistance").show();
+						$("#location").show();
+					}else if(long>0){
+						$("#myLocation").show();
+						$("#location").hide();
 					}else{
-						$("#alertDistance").show();
-						$("#controlsDistance").hide();
-					}			
+						$("#myLocation").hide();
+						$("#location").hide();
+					}		
 				}
 			}
 		}
@@ -269,12 +312,13 @@ $(document).ready(function(){
 	});
 
 	$("#getDistanceLocations").on("click",function(){
-		$("#description").html("<h4>Select at least 2 Locations</h4>");
+		$("#description").html("<h4>Select more than 1 location to see other options of get distance between them</h4>");
 		$("#pingLocation").hide();
 		$("#getDistanceLocations").hide();
 		$("#saveLocation").hide();
 		$("#backStandard").show();
 		$("#viewGetDistance").show();
+		$("#all").show();
 		for(var key in $aMarkers){
 			$aMarkers[key].setAnimation(null);
 			google.maps.event.clearListeners($aMarkers[key], 'click');
@@ -317,7 +361,10 @@ $(document).ready(function(){
 	});
 
 	$("#all").on("click", function(){
-		showDefaultLocationsDistance();
+		for(var key in $aMarkers){
+			$aMarkers[key].setAnimation(null);			
+		}
+		showAllDistances();
 		$("#appendSelect").hide();
 	});
 
@@ -353,7 +400,9 @@ $(document).ready(function(){
 			$("#getDistanceLocations").show();
 			$("#saveLocation").show();
 			$("#backStandard").hide();
-			$("#controlsDistance").hide();
+			$("#myLocation").hide();
+			$("#all").hide();
+			$("#location").hide();
 			$("#viewGetDistance").hide();
 			$("#pingLocation").show();
 			$("#appendSelect").hide();

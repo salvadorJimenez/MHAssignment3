@@ -7,3 +7,6 @@
 	margin-top: 0 auto;
 }
 
+#myLocation, #location,#all{
+	display:none;
+}
